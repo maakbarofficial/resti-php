@@ -38,36 +38,52 @@ class Router {
     }
 
     public static function dispatch(Request $request) {
-        foreach (self::$routes as $route) {
-            if ($route['method'] !== $request->method) continue;
+        $allowedMethods = [];
+        $pathExists = false;
 
+        foreach (self::$routes as $route) {
             $pattern = preg_replace('/\{(\w+)\}/', '(?P<$1>[^/]+)', $route['path']);
             $pattern = '#^' . $pattern . '$#';
 
             if (preg_match($pattern, $request->uri, $matches)) {
-                $request->params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+                $pathExists = true;
+                $allowedMethods[] = $route['method'];
 
-                $next = function () use ($route, $request) {
-                    list($controller, $method) = explode('@', $route['handler']);
-                    $controller = "App\\Controllers\\" . $controller;
-                    $instance = new $controller();
-                    $instance->$method($request);
-                };
+                if ($route['method'] === $request->method) {
+                    $request->params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
 
-                $middlewares = array_reverse($route['middlewares']);
-                foreach ($middlewares as $middleware) {
-                    $middlewareClass = "App\\Middlewares\\" . $middleware;
-                    $instance = new $middlewareClass();
-                    $next = function () use ($instance, $request, $next) {
-                        $instance->handle($request, $next);
+                    $next = function () use ($route, $request) {
+                        list($controller, $method) = explode('@', $route['handler']);
+                        $controller = "App\\Controllers\\" . $controller;
+                        $instance = new $controller();
+                        $instance->$method($request);
                     };
-                }
 
-                $next();
-                return;
+                    $middlewares = array_reverse($route['middlewares']);
+                    foreach ($middlewares as $middleware) {
+                        $middlewareClass = "App\\Middlewares\\" . $middleware;
+                        $instance = new $middlewareClass();
+                        $next = function () use ($instance, $request, $next) {
+                            $instance->handle($request, $next);
+                        };
+                    }
+
+                    $next();
+                    return;
+                }
             }
         }
 
-        Response::error('Not Found', 404);
+        if ($pathExists) {
+            // Path exists but method not allowed
+            Response::error(
+                'Method Not Allowed: Allowed methods are ' . implode(', ', $allowedMethods),
+                405,
+                'Method not allowed'
+            );
+        } else {
+            // Path does not exist
+            Response::error('Not Found', 404);
+        }
     }
 }

@@ -1,0 +1,22 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /public/
+
+    # Prevent access to .htaccess
+    <Files ".htaccess">
+        Order Allow,Deny
+        Deny from all
+    </Files>
+
+    # Redirect all requests to index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [QSA,L]
+
+    # Set environment variables for PHP
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    ErrorDocument 500 "mod_rewrite is required for this application"
+</IfModule>

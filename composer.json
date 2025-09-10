@@ -1,10 +1,40 @@
 {
-    "require": {
-        "firebase/php-jwt": "^6.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "app/"
-        }
+  "name": "maakbarofficial/resti-php",
+  "description": "A Framework For Building REST APIs using PHP",
+  "type": "project",
+  "version": "1.0.0",
+  "keywords": [
+    "rest",
+    "api",
+    "todo",
+    "php",
+    "jwt",
+    "framework"
+  ],
+  "homepage": "https://github.com/maakbarofficial/resti-php",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Muhammad Ali Akbar",
+      "email": "aliakbar.mql@gmail.com"
     }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  },
+  "scripts": {
+    "migrate": "php migrate.php",
+    "migrate:rollback": "php migrate.php down"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "minimum-stability": "stable"
 }

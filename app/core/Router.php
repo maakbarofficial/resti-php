@@ -2,17 +2,20 @@
 
 namespace App\Core;
 
-class Router {
+class Router
+{
     private static $routes = [];
     private $prefix = '';
 
-    public static function group($prefix, $callback) {
+    public static function group($prefix, $callback)
+    {
         $router = new self();
         $router->prefix = $prefix;
         $callback($router);
     }
 
-    public function add($method, $path, $handler, $middlewares = []) {
+    public function add($method, $path, $handler, $middlewares = [])
+    {
         self::$routes[] = [
             'method' => $method,
             'path' => $this->prefix . $path,
@@ -21,23 +24,28 @@ class Router {
         ];
     }
 
-    public function get($path, $handler, $middlewares = []) {
+    public function get($path, $handler, $middlewares = [])
+    {
         $this->add('GET', $path, $handler, $middlewares);
     }
 
-    public function post($path, $handler, $middlewares = []) {
+    public function post($path, $handler, $middlewares = [])
+    {
         $this->add('POST', $path, $handler, $middlewares);
     }
 
-    public function put($path, $handler, $middlewares = []) {
+    public function put($path, $handler, $middlewares = [])
+    {
         $this->add('PUT', $path, $handler, $middlewares);
     }
 
-    public function delete($path, $handler, $middlewares = []) {
+    public function delete($path, $handler, $middlewares = [])
+    {
         $this->add('DELETE', $path, $handler, $middlewares);
     }
 
-    public static function dispatch(Request $request) {
+    public static function dispatch(Request $request)
+    {
         $allowedMethods = [];
         $pathExists = false;
 
@@ -75,15 +83,15 @@ class Router {
         }
 
         if ($pathExists) {
-            // Path exists but method not allowed
-            Response::error(
+            Response::send(
+                false,
+                null,
+                'Method not allowed',
                 'Method Not Allowed: Allowed methods are ' . implode(', ', $allowedMethods),
-                405,
-                'Method not allowed'
+                405
             );
         } else {
-            // Path does not exist
-            Response::error('Not Found', 404);
+            Response::send(false, null, 'Resource not found', 'Not Found', 404);
         }
     }
 }

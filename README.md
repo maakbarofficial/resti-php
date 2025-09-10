@@ -198,4 +198,4 @@ curl -X GET http://resti.test/v1/todos -H "Authorization: Bearer <admin_jwt>"
 - **Admin Creation**: In production, restrict `role: admin` in `/v1/register` by hardcoding `$role = 'user'` in `AuthController`.
 - **Input Validation**: Add validation for email, password, and TODO fields in controllers.
 
-Thats it. Lets Build Lightweight APIs Now...!
+Thats it. Lets Build Lightweight REST APIs Now...!

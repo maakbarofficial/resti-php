@@ -1,4 +1,4 @@
-# RESTI PHP - A Framework For Building REST APIs using PHP
+# RESTI PHP - Build REST APIs using Core PHP
 
 A lightweight REST API framework and TODO application backend built in core PHP, mimicking Express.js-style routing. The API supports user authentication with JSON Web Tokens (JWT), role-based authorization (user and admin roles), and CRUD operations for TODO items. It uses a MySQL database with PDO and includes migrations for easy setup.
 

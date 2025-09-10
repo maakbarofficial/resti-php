@@ -29,7 +29,8 @@
   },
   "scripts": {
     "migrate": "php migrate.php",
-    "migrate:rollback": "php migrate.php down"
+    "migrate:rollback": "php migrate.php down",
+    "start": "php -S localhost:8000 -t public"
   },
   "config": {
     "optimize-autoloader": true,

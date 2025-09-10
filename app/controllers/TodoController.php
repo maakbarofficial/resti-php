@@ -4,78 +4,119 @@ namespace App\Controllers;
 
 use App\Core\Request;
 use App\Core\Response;
+use App\Core\Validator;
 use App\Models\Todo;
 
-class TodoController {
-    public function index(Request $request) {
+class TodoController
+{
+    public function index(Request $request)
+    {
+        $validator = new Validator();
+        $rules = [
+            'completed' => ['boolean']
+        ];
+
+        if (!$validator->validate($request->query, $rules)) {
+            Response::send(false, null, 'Validation failed', implode('; ', array_merge(...array_values($validator->getErrors()))), 400);
+        }
+
         $todoModel = new Todo();
         $isAdmin = $request->user['role'] === 'admin';
         $todos = $todoModel->getAllForUser($request->user['id'], $isAdmin);
-        Response::success($todos, 'Todos retrieved successfully');
+        Response::send(true, $todos, 'Todos retrieved successfully', null);
     }
 
-    public function show(Request $request) {
-        $id = $request->params['id'] ?? null;
-        if (!$id) {
-            Response::error('Missing todo ID', 400);
+    public function show(Request $request)
+    {
+        $validator = new Validator();
+        $rules = [
+            'id' => ['required', 'integer']
+        ];
+
+        if (!$validator->validate($request->params, $rules)) {
+            Response::send(false, null, 'Validation failed', implode('; ', array_merge(...array_values($validator->getErrors()))), 400);
         }
 
+        $id = $request->params['id'];
         $todoModel = new Todo();
         $isAdmin = $request->user['role'] === 'admin';
         $todo = $todoModel->getById($id, $request->user['id'], $isAdmin);
         if (!$todo) {
-            Response::error('Todo not found or unauthorized', 404);
+            Response::send(false, null, 'Operation failed', 'Todo not found or unauthorized', 404);
         }
 
-        Response::success($todo, 'Todo retrieved successfully');
+        Response::send(true, $todo, 'Todo retrieved successfully', null);
     }
 
-    public function store(Request $request) {
-        $title = $request->body['title'] ?? null;
-        $description = $request->body['description'] ?? '';
+    public function store(Request $request)
+    {
+        $validator = new Validator();
+        $rules = [
+            'title' => ['required', 'max:255'],
+            'description' => ['max:1000']
+        ];
 
-        if (!$title) {
-            Response::error('Missing title', 400);
+        if (!$validator->validate($request->body, $rules)) {
+            Response::send(false, null, 'Validation failed', implode('; ', array_merge(...array_values($validator->getErrors()))), 400);
         }
+
+        $title = $request->body['title'];
+        $description = $request->body['description'] ?? '';
 
         $todoModel = new Todo();
         $id = $todoModel->create($request->user['id'], $title, $description);
-        Response::success(['id' => $id], 'Todo created successfully', 201);
+        Response::send(true, ['id' => $id], 'Todo created successfully', null, 201);
     }
 
-    public function update(Request $request) {
-        $id = $request->params['id'] ?? null;
-        $title = $request->body['title'] ?? null;
-        $description = $request->body['description'] ?? null;
-        $completed = $request->body['completed'] ?? false;
+    public function update(Request $request)
+    {
+        $validator = new Validator();
+        $rules = [
+            'id' => ['required', 'integer'],
+            'title' => ['required', 'max:255'],
+            'description' => ['max:1000'],
+            'completed' => ['boolean']
+        ];
 
-        if (!$id || !$title) {
-            Response::error('Missing id or title', 400);
+        $data = array_merge($request->params, $request->body);
+        if (!$validator->validate($data, $rules)) {
+            Response::send(false, null, 'Validation failed', implode('; ', array_merge(...array_values($validator->getErrors()))), 400);
         }
+
+        $id = $request->params['id'];
+        $title = $request->body['title'];
+        $description = $request->body['description'] ?? null;
+        $completed = $request->body['completed'] ?? null;
 
         $todoModel = new Todo();
         $isAdmin = $request->user['role'] === 'admin';
-        $success = $todoModel->update($id, $request->user['id'], $title, $description, $completed, $isAdmin);
+        $success = $todoModel->update($id, $request->user['id'], $title, $description, $completed ?? false, $isAdmin);
         if (!$success) {
-            Response::error('Todo not found or unauthorized', 404);
+            Response::send(false, null, 'Operation failed', 'Todo not found or unauthorized', 404);
         }
 
-        Response::success(null, 'Todo updated successfully');
+        Response::send(true, null, 'Todo updated successfully', null);
     }
 
-    public function destroy(Request $request) {
-        $id = $request->params['id'] ?? null;
-        if (!$id) {
-            Response::error('Missing todo ID', 400);
+    public function destroy(Request $request)
+    {
+        $validator = new Validator();
+        $rules = [
+            'id' => ['required', 'integer']
+        ];
+
+        if (!$validator->validate($request->params, $rules)) {
+            Response::send(false, null, 'Validation failed', implode('; ', array_merge(...array_values($validator->getErrors()))), 400);
         }
 
+        $id = $request->params['id'];
         $todoModel = new Todo();
         $isAdmin = $request->user['role'] === 'admin';
         $success = $todoModel->delete($id, $request->user['id'], $isAdmin);
         if (!$success) {
-            Response::error('Todo not found or unauthorized', 404);
+            Response::send(false, null, 'Operation failed', 'Todo not found or unauthorized', 404);
         }
 
-        Response::success(null, 'Todo deleted successfully');
+        Response::send(true, null, 'Todo deleted successfully', null);
     }
 }
